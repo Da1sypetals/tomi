@@ -1,7 +1,9 @@
-from icecream import ic
+import json
 import os
 import pickle
-import json
+import sys
+
+from icecream import ic
 
 
 def process_alloc_data(device_trace, plot_segments=False, max_entries=15000):
@@ -11,14 +13,8 @@ def process_alloc_data(device_trace, plot_segments=False, max_entries=15000):
     addr_to_alloc = {}
 
     # 第一阶段：处理事件流
-    alloc_actions = (
-        {"alloc", "segment_alloc"} if not plot_segments else {"segment_alloc"}
-    )
-    free_actions = (
-        {"free", "free_completed"}
-        if not plot_segments
-        else {"segment_free", "segment_free"}
-    )
+    alloc_actions = {"alloc", "segment_alloc"} if not plot_segments else {"segment_alloc"}
+    free_actions = {"free", "free_completed"} if not plot_segments else {"segment_free", "segment_free"}
 
     for idx, event in enumerate(device_trace):
         if event["action"] in alloc_actions:
@@ -174,11 +170,13 @@ def main():
 
     parser = argparse.ArgumentParser()
     # parse arg -p or --path
-    parser.add_argument("-p", "--path", type=str, default="snapshots/snapshot.pickle")
-    parser.add_argument("-o", "--output_dir", type=str, default="alloc_data/")
+    parser.add_argument("-p", "--path", type=str, default="snapshots/snapshot.pickle", help="path to snapshot")
+    parser.add_argument("-o", "--output_dir", type=str, default="alloc_data/", help="output dir")
+    parser.add_argument("-d", "--device", type=int, default=0, help="device id")
     args = parser.parse_args()
     path = args.path
     output_dir = args.output_dir
+    device_id = args.device
 
     # if output dir does not exist, create
     if not os.path.exists(output_dir):
@@ -187,7 +185,14 @@ def main():
     with open(path, "rb") as f:
         dump = pickle.load(f)
 
-    alloc_data = process_alloc_data(get_trace(dump)[0])
+    trace = get_trace(dump)
+
+    if len(trace) <= device_id:
+        # print to stderr and exit
+        print("device id out of range", file=sys.stderr)
+        exit(1)
+
+    alloc_data = process_alloc_data(trace[device_id])
 
     # max_size = out["max_size"]
     # max_at_time = out["max_at_time"]
