@@ -12,7 +12,19 @@
 - sql .... 使用sql命令
 （例如，字符串filter+sum大小，用sql实现）
 需要一个把所有frames拼接在一起存储的字段，方便查找。
-(好像没有适合的schema...)
+
+
+可能被sql用到的字段：
+id: index int
+size: int
+callstack: varchar
+peak_mem: int
+
+用不到的：
+timesteps
+offsets
+peak timestamps
+
 
 frames可能需要直接拼接成varchar存储，而不是存储一个列表；用最长的作为varchar长度。
 timesteps / offsets直接取最长的作为存储长度，然后用timesteps_len存储长度。

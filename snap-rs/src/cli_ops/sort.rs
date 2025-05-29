@@ -18,10 +18,10 @@ impl MemSnap {
                     .allocations
                     .iter()
                     .enumerate()
-                    .map(|(i, alloc)| (i, alloc.size))
+                    .map(|(i, alloc)| (i, alloc.size)) // map allocation size to its index
                     .collect::<Vec<(usize, u64)>>();
 
-                // NOTE: sort descending
+                // NOTE: sort by allocation size, DEScending
                 sizes.sort_by(|(i1, size1), (i2, size2)| size2.cmp(size1));
 
                 let indices_sorted_by_size: Vec<usize> =

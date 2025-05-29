@@ -1,4 +1,4 @@
-use crate::snapshot::{Allocation, ElementData, RawAllocationData};
+use crate::allocation::{Allocation, ElementData, RawAllocationData};
 use serde::Deserialize;
 use std::error::Error;
 use std::fs;

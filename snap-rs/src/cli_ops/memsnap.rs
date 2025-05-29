@@ -1,4 +1,6 @@
-use crate::snapshot::Allocation;
+use rusqlite::Connection;
+
+use crate::allocation::Allocation;
 use std::collections::BTreeMap;
 
 pub type AllocationIndex = usize;
@@ -14,7 +16,8 @@ pub struct MemSnap {
     pub timestamp_sorted_sizes: BTreeMap<u32, Vec<AllocationIndex>>, // timestamp -> indices, sorted descending
 
     pub peak_sorted_sizes: Option<Vec<AllocationIndex>>,
-    // database: SqLite database optional
+
+    pub database: Option<Connection>, // database connection to sqlite
 }
 
 impl MemSnap {
@@ -36,6 +39,7 @@ impl MemSnap {
             global_sorted_sizes: None,
             timestamp_sorted_sizes: BTreeMap::new(),
             peak_sorted_sizes: None,
+            database: None,
         }
     }
 }

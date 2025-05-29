@@ -1,4 +1,4 @@
 pub mod cli_ops;
 pub mod load;
-pub mod snapshot;
+pub mod allocation;
 pub mod utils;
