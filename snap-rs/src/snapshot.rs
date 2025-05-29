@@ -3,7 +3,7 @@ use serde::Deserialize;
 // Corresponds to the Python Frame dataclass
 #[derive(Deserialize, Debug)]
 pub struct Frame {
-    pub(crate) name: String,
+    pub(crate) name: String, // function name
     pub(crate) filename: String,
     pub(crate) line: u32,
 }
@@ -11,9 +11,9 @@ pub struct Frame {
 // Corresponds to the Python Allocation dataclass
 #[derive(Deserialize, Debug)]
 pub struct Allocation {
-    pub(crate) timesteps: Vec<u32>,
-    pub(crate) offsets: Vec<u32>,
-    pub(crate) size: u32,
+    pub(crate) timesteps: Vec<u32>, // x coords
+    pub(crate) offsets: Vec<u32>,   // y coords
+    pub(crate) size: u32,           // height (sweep distance)
     pub(crate) callstack: Vec<Frame>,
 }
 

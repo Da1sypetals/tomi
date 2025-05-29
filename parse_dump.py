@@ -30,7 +30,6 @@ def process_alloc_data(device_trace, plot_segments=False, max_entries=15000):
                 initially_allocated.append(len(elements) - 1)
                 actions.append(len(elements) - 1)
 
-    # 第二阶段：构建初始内存状态（示例简化，需根据实际segment数据补充）
     # 这里假设没有预分配内存块，仅处理事件流中的初始状态
     # 实际需要根据segment/block数据补充类似JavaScript的初始分配逻辑
 
