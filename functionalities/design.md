@@ -26,8 +26,7 @@ offsets
 peak timestamps
 
 
-frames可能需要直接拼接成varchar存储，而不是存储一个列表；用最长的作为varchar长度。
-timesteps / offsets直接取最长的作为存储长度，然后用timesteps_len存储长度。
+frames可能需要直接拼接成text存储。
 
 支持peak n，查找所有alloc中 max(offset)+size 第n大的，然后输出（这个时候alive的所有alloc的index）
 需要建立每个timestamp哪些alloc活着 的索引

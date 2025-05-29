@@ -39,7 +39,7 @@ impl MemSnap {
 
 #[cfg(test)]
 mod tests {
-    use crate::{cli_ops::memsnap::MemSnap, load::load_allocations, utils::format_bytes};
+    use crate::{repl_ops::memsnap::MemSnap, load::load_allocations, utils::format_bytes};
 
     #[test]
     fn test_peak() {
