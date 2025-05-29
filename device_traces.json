@@ -1,0 +1,58 @@
+[
+    // index: device_id
+    [
+        // index: action no.
+        {
+            "action": "alloc",
+            "addr": 30129788416,
+            "size": 5120,
+            "stream": 0,
+            "time_us": 1748499054404754,
+            "frames": [
+                {
+                    "name": "torch::unwind::unwind()",
+                    "filename": "??",
+                    "line": 0
+                },
+                {
+                    "name": "torch::CapturedTraceback::gather(bool, bool, bool)",
+                    "filename": "??",
+                    "line": 0
+                }
+            ]
+        },
+        {
+            "action": "segment_alloc",
+            "addr": 30144462848,
+            "size": 20971520,
+            "stream": 0,
+            "time_us": 1748499054435924,
+            "frames": [
+                {
+                    "name": "torch::unwind::unwind()",
+                    "filename": "??",
+                    "line": 0
+                },
+                {
+                    "name": "torch::CapturedTraceback::gather(bool, bool, bool)",
+                    "filename": "??",
+                    "line": 0
+                }
+            ]
+        },
+        {
+            "action": "free_requested",
+            "addr": 30129793536,
+            "size": 1048576,
+            "stream": 0,
+            "time_us": 1748499054473774,
+            "frames": [
+                {
+                    "name": "torch::unwind::unwind()",
+                    "filename": "??",
+                    "line": 0
+                }
+            ]
+        }
+    ]
+]
