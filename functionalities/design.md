@@ -40,3 +40,7 @@ help
 ## 其他工具
 --plot-line
 生成一个（显存随时间变化折线图），方便发现显存最高的时间，然后用REPL查看这个时间点。
+
+
+# TODO
+20MB difference是哪里来的？？？用python看原始的pickle

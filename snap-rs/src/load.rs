@@ -42,11 +42,31 @@ pub fn load_allocations(
     let allocations: Vec<Allocation> = raw_allocs
         .into_iter()
         .zip(elements_data.into_iter())
-        .map(|(raw_alloc, element_data)| Allocation {
-            timesteps: raw_alloc.timesteps,
-            offsets: raw_alloc.offsets,
-            size: raw_alloc.size,
-            callstack: element_data.frames, // element_data.frames is Vec<Frame>
+        .map(|(raw_alloc, element_data)| {
+            let peak_base = *raw_alloc.offsets.iter().max().unwrap();
+            let peak_timestamps = raw_alloc
+                .timesteps
+                .iter()
+                .zip(raw_alloc.offsets.iter())
+                .filter_map(|(&timestamp, &offset)| {
+                    if offset == peak_base {
+                        // if this timestep has peak memory
+                        Some(timestamp)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let peak = peak_base + raw_alloc.size;
+            Allocation {
+                timesteps: raw_alloc.timesteps,
+                offsets: raw_alloc.offsets,
+                size: raw_alloc.size,
+                callstack: element_data.frames, // element_data.frames is Vec<Frame>
+                peak_mem: peak,
+                peak_timestamps,
+            }
         })
         .collect();
 

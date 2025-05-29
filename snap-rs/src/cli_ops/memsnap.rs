@@ -1,34 +1,41 @@
 use crate::snapshot::Allocation;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 pub type AllocationIndex = usize;
 
 /// Options are lazily created
 pub struct MemSnap {
-    allocations: Vec<Allocation>,
+    pub allocations: Vec<Allocation>,
 
-    timestamps: BTreeSet<u32>, // all timestamps that something happens
+    pub timestamps: Vec<u32>, // all timestamps that something happens, sorted ascending
 
-    global_topk: Option<Vec<AllocationIndex>>,
+    pub global_sorted_sizes: Option<Vec<AllocationIndex>>, // indices, sorted descending
 
-    timestamp_topk: Option<BTreeMap<u32, AllocationIndex>>, // timestamp -> index
+    pub timestamp_sorted_sizes: BTreeMap<u32, Vec<AllocationIndex>>, // timestamp -> indices, sorted descending
 
-                                                            // database: SqLite database
+    pub peak_sorted_sizes: Option<Vec<AllocationIndex>>,
+    // database: SqLite database optional
 }
 
 impl MemSnap {
     pub fn new(allocations: Vec<Allocation>) -> Self {
-        let mut timestamps: BTreeSet<u32> = BTreeSet::new();
+        let mut timestamps: Vec<u32> = Vec::new();
 
         for alloc in &allocations {
             timestamps.extend(alloc.timesteps.iter());
         }
 
+        timestamps.sort();
+        timestamps.dedup();
+
+        // dbg!(&timestamps);
+
         MemSnap {
             allocations,
             timestamps: timestamps,
-            global_topk: None,
-            timestamp_topk: None,
+            global_sorted_sizes: None,
+            timestamp_sorted_sizes: BTreeMap::new(),
+            peak_sorted_sizes: None,
         }
     }
 }
