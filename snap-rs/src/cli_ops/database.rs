@@ -38,32 +38,45 @@ impl MemSnap {
 
         let database = Connection::open_in_memory()?;
 
-        database.execute("CREATE TABLE allocations (idx INTEGER PRIMARY KEY, size INTEGER, callstack TEXT, peak_mem INTEGER)", ())?;
+        {
+            database.execute("CREATE TABLE allocations (idx INTEGER PRIMARY KEY, size INTEGER, callstack TEXT, peak_mem INTEGER)", ())?;
 
-        for row in rows {
-            database.execute(
-                "INSERT INTO allocations (idx, size, callstack, peak_mem) VALUES (?, ?, ?, ?)",
-                (&row.index, &row.size, &row.callstack, &row.peak_mem),
-            )?;
+            for row in rows {
+                database.execute(
+                    "INSERT INTO allocations (idx, size, callstack, peak_mem) VALUES (?, ?, ?, ?)",
+                    (&row.index, &row.size, &row.callstack, &row.peak_mem),
+                )?;
+            }
+
+            let mut stmt =
+                database.prepare("SELECT idx, size, callstack, peak_mem FROM allocations")?;
+
+            let person_iter = stmt
+                .query_map([], |row| {
+                    Ok(AllocationDbRow {
+                        index: row.get(0)?,
+                        size: row.get(1)?,
+                        callstack: row.get(2)?,
+                        peak_mem: row.get(3)?,
+                    })
+                })?
+                .collect::<Vec<_>>();
         }
 
-        let mut stmt =
-            database.prepare("SELECT idx, size, callstack, peak_mem FROM allocations")?;
-
-        let person_iter = stmt
-            .query_map([], |row| {
-                Ok(AllocationDbRow {
-                    index: row.get(0)?,
-                    size: row.get(1)?,
-                    callstack: row.get(2)?,
-                    peak_mem: row.get(3)?,
-                })
-            })?
-            .collect::<Vec<_>>();
-
-        dbg!(person_iter);
+        self.database = Some(database);
 
         Ok(())
+    }
+
+    pub fn exec_sql(&mut self, sql: &str) -> Result<(), anyhow::Error> {
+        match &self.database {
+            Some(database) => {
+                todo!();
+                let rows_changed = database.query_row(sql, ||)?;
+                Ok(())
+            }
+            None => Err(anyhow::anyhow!("Please build sqlite database first!")),
+        }
     }
 }
 
@@ -84,5 +97,9 @@ mod tests {
         let mut memsnap = MemSnap::new(allocations);
 
         memsnap.build_sqlite().unwrap();
+
+        memsnap
+            .exec_sql("SELECT * FROM allocations ORDER BY size DESC LIMIT 10")
+            .unwrap();
     }
 }
