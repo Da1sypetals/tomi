@@ -12,7 +12,7 @@ pub struct Frame {
 #[derive(Deserialize, Debug)]
 pub struct Allocation {
     pub(crate) timesteps: Vec<u32>, // x coords
-    pub(crate) offsets: Vec<u32>,   // y coords
+    pub(crate) offsets: Vec<u32>,   // y coords, length same as `timesteps`
     pub(crate) size: u32,           // height (sweep distance)
     pub(crate) callstack: Vec<Frame>,
 }

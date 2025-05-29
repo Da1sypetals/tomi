@@ -155,11 +155,17 @@ def process_alloc_data(device_trace, plot_segments=False, max_entries=15000):
     }
 
 
-def get_trace(dump: dict):
-    return dump["device_traces"]
+def get_trace(dump: dict, device_id=0):
+    trace = dump["device_traces"]
+    if len(trace) <= device_id:
+        # print to stderr and exit
+        expected = 0 if len(trace) == 1 else f"0 ~ {len(trace) - 1}"
+        print(f"Error: device id out of range, expected {expected}, got {device_id}", file=sys.stderr)
+        exit(1)
+    return trace[device_id]
 
 
-def main():
+def cli():
     """
     elements: 原始的 action 对象，保存了分配地址，callstack等信息，长度为n
     allocation_over_time: 用来画图的东西。其中最后一项是summary，可以忽略，长度为n+1
@@ -184,14 +190,8 @@ def main():
     with open(path, "rb") as f:
         dump = pickle.load(f)
 
-    trace = get_trace(dump)
-
-    if len(trace) <= device_id:
-        # print to stderr and exit
-        print("device id out of range", file=sys.stderr)
-        exit(1)
-
-    alloc_data = process_alloc_data(trace[device_id])
+    trace = get_trace(dump, device_id)
+    alloc_data = process_alloc_data(trace)
 
     # max_size = out["max_size"]
     # max_at_time = out["max_at_time"]
@@ -217,4 +217,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cli()
