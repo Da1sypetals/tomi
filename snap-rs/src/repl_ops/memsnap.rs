@@ -49,11 +49,11 @@ impl MemSnap {
     }
 
     pub fn from_zip(zip_path: &str) -> anyhow::Result<Self> {
-        pretty_env_logger::formatted_timed_builder()
-            .filter_level(log::LevelFilter::Trace)
-            .init();
+        // pretty_env_logger::formatted_timed_builder()
+        //     .filter_level(log::LevelFilter::Trace)
+        //     .init();
 
-        info!("Loading allocations...");
+        info!("Loading allocations from zip...");
         let rawsnap = read_snap_from_zip(zip_path)?;
         let allocations = load_allocations(rawsnap)?;
 
@@ -61,11 +61,11 @@ impl MemSnap {
     }
 
     pub fn from_jsons(alloc_path: &str, elements_path: &str) -> anyhow::Result<Self> {
-        pretty_env_logger::formatted_timed_builder()
-            .filter_level(log::LevelFilter::Trace)
-            .init();
+        // pretty_env_logger::formatted_timed_builder()
+        //     .filter_level(log::LevelFilter::Trace)
+        //     .init();
 
-        info!("Loading allocations...");
+        info!("Loading allocations from jsons...");
         let rawsnap = read_snap_from_jsons(alloc_path, elements_path)?;
         let allocations = load_allocations(rawsnap)?;
         Ok(Self::new(allocations))

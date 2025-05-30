@@ -1,0 +1,1 @@
+SELECT SUM(size) FROM (SELECT size FROM allocations ORDER BY size DESC LIMIT 3)

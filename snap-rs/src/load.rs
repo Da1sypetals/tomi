@@ -1,4 +1,5 @@
 use crate::allocation::{Allocation, ElementData, RawAllocationData};
+use log::info;
 use serde::Deserialize;
 use std::error::Error;
 use std::fs;
@@ -84,10 +85,12 @@ pub fn read_snap_from_zip(zip_file_path: &str) -> anyhow::Result<RawSnap> {
 
 pub fn read_snap_from_jsons(alloc_path: &str, elements_path: &str) -> anyhow::Result<RawSnap> {
     // Read and parse allocations.json
+    info!("Loading: allocations");
     let alloc_content = fs::read_to_string(alloc_path)
         .map_err(|e| anyhow::anyhow!("Failed to read allocations file '{}': {}", alloc_path, e))?;
 
     // Read and parse elements.json
+    info!("Loading: elements");
     let elements_content = fs::read_to_string(elements_path)
         .map_err(|e| anyhow::anyhow!("Failed to read elements file '{}': {}", elements_path, e))?;
 
