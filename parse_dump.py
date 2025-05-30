@@ -164,6 +164,7 @@ def cli():
     parser.add_argument("-p", "--path", type=str, default="snapshots/snapshot.pickle", help="path to snapshot")
     parser.add_argument("-o", "--output_dir", type=str, default="alloc_data/", help="output dir")
     parser.add_argument("-d", "--device", type=int, default=0, help="device id")
+    parser.add_argument("-z", "--zip", action="store_true", help="Whether to save as zipped")
     args = parser.parse_args()
     path = args.path
     output_dir = args.output_dir
@@ -197,6 +198,14 @@ def cli():
     elements_path = os.path.join(output_dir, "elements.json")
     with open(elements_path, "w") as f:
         f.write(json.dumps(elements))
+
+    import zipfile
+
+    if args.zip:
+        zip_path = os.path.join(output_dir, "snap.zip")
+        with zipfile.ZipFile(zip_path, "w") as f:
+            f.write(allocations_path)
+            f.write(elements_path)
 
     ic(len(elements))
     ic(len(allocations))
