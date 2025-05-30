@@ -66,19 +66,22 @@ impl MemSnap {
             "i" | "inspect" => {
                 // split args by every whitespace
                 let argv = args.split_whitespace().collect::<Vec<&str>>();
+                // if no index is specified, inspect the last allocation
                 if argv.len() == 0 {
                     return ExecResult::Error(
                         "`inspect` command requires at least an index argument.".to_string(),
                     );
                 }
-                // inspect allocation at specific index
+                // try to parse the index as a number
                 let index = match argv[0].parse::<usize>() {
                     Ok(index) => index,
                     Err(e) => {
+                        // if the index is not a number, return an error
                         return ExecResult::Error(format!("Invalid index value: {}", e));
                     }
                 };
 
+                // check if the index is within the bounds of the allocations
                 if index >= self.allocations.len() {
                     return ExecResult::Error(format!(
                         "Index out of bounds: {} >= {}",
@@ -89,8 +92,8 @@ impl MemSnap {
 
                 let options = &argv[1..];
 
-                if options.contains(&"*") {
-                    // inspect all allocations
+                if options.is_empty() {
+                    // if no options are specified, just print the allocation details
                     self.allocations[index].to_string().into()
                 } else {
                     // TODO: implement other options
@@ -106,6 +109,7 @@ impl MemSnap {
                 ExecResult::Success(
                     r#"Available commands:
   help                    - Display this help message.
+  i | inspect <index>     - Inspect an allocation at the specified index.
   sql <query>             - Execute an SQL query against the loaded data (require build sql database first).
   sqlbuild                - Build the in-memory sqlite database from current data.
   byte <value>            - Format a byte value (e.g., '1024' -> '1.0 KiB').
