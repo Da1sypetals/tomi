@@ -17,6 +17,8 @@ impl MemSnap {
     /// Returns (timestamp -> memory occupied) mapping as a Vec
     pub fn build_timeline(&mut self) {
         if self.timeline.is_none() {
+            log::info!("Building timeline");
+
             let mut timeline = BTreeMap::new();
             let mut max_time = 0;
             let mut max_alloc = 0;

@@ -40,28 +40,16 @@ impl MemSnap {
         let database = Connection::open_in_memory()?;
 
         {
+            log::info!("Creating allocations table");
             database.execute("CREATE TABLE allocations (idx INTEGER PRIMARY KEY, size INTEGER, callstack TEXT, peak_mem INTEGER)", ())?;
 
+            log::info!("Inserting rows into allocations table");
             for row in rows {
                 database.execute(
                     "INSERT INTO allocations (idx, size, callstack, peak_mem) VALUES (?, ?, ?, ?)",
                     (&row.index, &row.size, &row.callstack, &row.peak_mem),
                 )?;
             }
-
-            let mut stmt =
-                database.prepare("SELECT idx, size, callstack, peak_mem FROM allocations")?;
-
-            let person_iter = stmt
-                .query_map([], |row| {
-                    Ok(AllocationDbRow {
-                        index: row.get(0)?,
-                        size: row.get(1)?,
-                        callstack: row.get(2)?,
-                        peak_mem: row.get(3)?,
-                    })
-                })?
-                .collect::<Vec<_>>();
         }
 
         self.database = Some(database);
@@ -72,13 +60,14 @@ impl MemSnap {
     pub fn exec_sql(&mut self, sql: &str) -> Result<String, anyhow::Error> {
         match &self.database {
             Some(database) => {
+                log::info!("Executing SQL query");
+
                 let mut stmt = database.prepare(sql)?;
                 let num_cols = stmt.column_count();
                 let column_names: Vec<String> =
                     stmt.column_names().iter().map(|s| s.to_string()).collect();
 
                 let mut output_string = String::new();
-
                 let rows_iter = stmt.query_map([], |row| {
                     let mut row_values = Vec::new();
                     for i in 0..num_cols {
@@ -103,6 +92,7 @@ impl MemSnap {
                     Ok(row_values)
                 })?;
 
+                log::info!("Merging results");
                 output_string.push_str("\n===== SQL Query Results =====\n");
                 for (idx, row_result) in rows_iter.enumerate() {
                     let row_values = row_result?;

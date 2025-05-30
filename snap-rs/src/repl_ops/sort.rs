@@ -14,6 +14,7 @@ impl MemSnap {
         match &self.global_sorted_sizes {
             Some(indices_sorted_by_size) => Ok(indices_sorted_by_size[..k].to_vec()),
             None => {
+                log::info!("Sorting by size globally");
                 // create topk vector
                 let mut sizes = self
                     .allocations
@@ -61,6 +62,10 @@ impl MemSnap {
                 Ok(indices_sorted_by_size[..k].to_vec())
             }
             None => {
+                log::info!(
+                    "Round to timestamp {}, sorting for this timestamp",
+                    nearest_timestamp
+                );
                 // create topk vector
                 let mut sizes = self
                     .allocations
