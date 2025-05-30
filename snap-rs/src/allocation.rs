@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use std::fmt::{Display, Formatter, Result};
 
 // Corresponds to the Python Frame dataclass
 #[derive(Deserialize, Debug)]
@@ -6,6 +7,13 @@ pub struct Frame {
     pub name: String, // function name
     pub filename: String,
     pub line: u32,
+}
+
+// Implement Display for Frame to make callstack printing cleaner
+impl Display for Frame {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "  at {} ({}:{})", self.name, self.filename, self.line)
+    }
 }
 
 // Corresponds to the Python Allocation dataclass
@@ -17,6 +25,40 @@ pub struct Allocation {
     pub callstack: Vec<Frame>,
     pub peak_mem: u64,
     pub peak_timestamps: Vec<u32>, // reaches its peak at these timestamps
+}
+
+impl Display for Allocation {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        writeln!(f, "Allocation Details:")?;
+        writeln!(f, "├── Size: {} bytes", self.size)?;
+        writeln!(f, "├── Peak Memory: {} bytes", self.peak_mem)?;
+        writeln!(f, "├── Peak Timestamps: {:?}", self.peak_timestamps)?;
+        writeln!(
+            f,
+            "├── Timesteps: start {}, stop {}",
+            self.timesteps.first().unwrap_or(&0),
+            self.timesteps.last().unwrap_or(&0)
+        )?;
+        writeln!(f, "├── Offsets: omitted")?;
+        // Or print offsets if desired:
+        // writeln!(f, "├── Offsets: {:?}", self.offsets)?;
+
+        writeln!(f, "└── Callstack:")?;
+        if self.callstack.is_empty() {
+            writeln!(f, "    └── (empty callstack)")?;
+        } else {
+            for (i, frame) in self.callstack.iter().enumerate() {
+                let prefix = if i == self.callstack.len() - 1 {
+                    "    └──"
+                } else {
+                    "    ├──"
+                };
+                writeln!(f, "{} ({}){}", prefix, i, frame)?;
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl Allocation {

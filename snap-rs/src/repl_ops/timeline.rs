@@ -53,8 +53,8 @@ impl MemSnap {
                 root_area.fill(&WHITE)?;
 
                 let mut ctx = ChartBuilder::on(&root_area)
-                    .set_label_area_size(LabelAreaPosition::Left, 40)
-                    .set_label_area_size(LabelAreaPosition::Bottom, 40)
+                    .set_label_area_size(LabelAreaPosition::Left, 24)
+                    .set_label_area_size(LabelAreaPosition::Bottom, 24)
                     .caption("Memory Trace Timeline", ("sans-serif", 40))
                     .build_cartesian_2d(0..timeline.max_time, 0..timeline.max_alloc)?;
 
