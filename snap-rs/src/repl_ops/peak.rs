@@ -30,7 +30,7 @@ impl MemSnap {
 
                 self.peak_sorted_sizes = Some(indices_sorted_by_peak.clone());
 
-                dbg!(&indices_sorted_by_peak);
+                // dbg!(&indices_sorted_by_peak);
 
                 Ok(indices_sorted_by_peak[..k].to_vec())
             }

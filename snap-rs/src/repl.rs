@@ -113,13 +113,51 @@ impl MemSnap {
                 self.plot_timeline(args)?;
                 Ok(format!("Plot saved to {}", args).into())
             }
+            "peak" => {
+                // split args by every whitespace
+                let argv = args.split_whitespace().collect::<Vec<&str>>();
+                // if no index is specified, inspect the last allocation
+                if argv.len() != 1 && argv.len() != 2 {
+                    return Err(anyhow::anyhow!("`peak` command takes [k] as argument."));
+                }
+
+                // parse as usize
+                let k = argv[0].parse::<usize>()?;
+                match argv.len() {
+                    1 => Ok("Index, sorted descending by allocation size: ".to_owned()
+                        + &self
+                            .peak_topk(k)?
+                            .iter()
+                            .map(|&i| i.to_string())
+                            .collect::<Vec<_>>()
+                            .join(", ")),
+                    2 => {
+                        if argv[1] == "verbose" || argv[1] == "v" {
+                            Ok(self
+                                .peak_topk(k)?
+                                .iter()
+                                .enumerate()
+                                // rank: ranking sorted by size descending
+                                .map(|(rank, &i)| format!("#{}\n{}", rank, self.allocations[i]))
+                                .collect::<Vec<_>>()
+                                .join("\n\n"))
+                        } else {
+                            Err(anyhow::anyhow!(
+                                "Invalid option: {}, expected `verbose` or `v`",
+                                argv[1]
+                            ))
+                        }
+                    }
+                    _ => unreachable!(),
+                }
+            }
             "top" => {
                 // split args by every whitespace
                 let argv = args.split_whitespace().collect::<Vec<&str>>();
                 // if no index is specified, inspect the last allocation
                 if argv.len() == 0 || argv.len() > 3 {
                     return Err(anyhow::anyhow!(
-                        "`inspect` command takes optional [index] [verbose] as argument."
+                        "`top` command takes [k] and optional [verbose] [@timestamp] as argument."
                     ));
                 }
                 // try to parse the index as a number
