@@ -1,5 +1,7 @@
 # Tomi
 
+A REPL tool to inspect PyTorch memory dump files. To generate a dump, see https://docs.pytorch.org/docs/stable/torch_cuda_memory.html
+
 ## Run
 1. 生成一个snapshot: `/home/da1sypetals/dev/torch-snapshot/generate_snapshot/transformer.py`
 2. 生成压缩的json dump: 
