@@ -29,10 +29,16 @@ impl MemSnap {
                 Err(e) => ExecResult::Error(format!("Building Sqlite error: {}", e)),
             }
         } else if cmd.starts_with("byte ") {
-            let byte_str = cmd[5..].trim(); // Get string after "byte " and trim whitespace
+            let byte_str = cmd[4..].trim(); // Get string after "byte " and trim whitespace
             match byte_str.parse::<u64>() {
                 Ok(bytes) => format_bytes(bytes).into(),
                 Err(e) => ExecResult::Error(format!("Invalid byte value (expected uint64): {}", e)),
+            }
+        } else if cmd.starts_with("timeline ") {
+            let path = cmd[8..].trim(); // Get string after "timeline " and trim whitespace
+            match self.plot_timeline(path) {
+                Ok(_) => format!("Plot saved to {}", path).into(),
+                Err(e) => ExecResult::Error(format!("Plotting error: {}", e)),
             }
         } else if cmd == "q" || cmd == "quit" {
             ExecResult::Quit

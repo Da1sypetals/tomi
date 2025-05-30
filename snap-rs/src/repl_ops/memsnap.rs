@@ -7,6 +7,8 @@ use crate::{
 };
 use std::collections::BTreeMap;
 
+use super::timeline::Timeline;
+
 pub type AllocationIndex = usize;
 
 /// Options are lazily created
@@ -14,6 +16,8 @@ pub struct MemSnap {
     pub allocations: Vec<Allocation>,
 
     pub timestamps: Vec<u32>, // all timestamps that something happens, sorted ascending
+
+    pub timeline: Option<Timeline>,
 
     pub global_sorted_sizes: Option<Vec<AllocationIndex>>, // indices, sorted descending
 
@@ -41,6 +45,7 @@ impl MemSnap {
         MemSnap {
             allocations,
             timestamps: timestamps,
+            timeline: None,
             global_sorted_sizes: None,
             timestamp_sorted_sizes: BTreeMap::new(),
             peak_sorted_sizes: None,

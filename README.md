@@ -7,3 +7,8 @@ Equivalently run via:
 ```
 RUST_LOG="off,snap_rs=info" cargo run --bin repl -- ...
 ```
+
+
+# TODO
+1. -v -b 输出bitmap， svg；指定resolution
+2. i idx/inspect idx 检视特定index位置的alloc
