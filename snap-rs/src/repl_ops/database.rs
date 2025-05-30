@@ -121,7 +121,7 @@ impl MemSnap {
 
 #[cfg(test)]
 mod tests {
-    use crate::{repl_ops::memsnap::MemSnap, load::load_allocations, utils::format_bytes};
+    use crate::{load::load_allocations, repl_ops::memsnap::MemSnap, utils::format_bytes};
 
     #[test]
     fn test_peak() {
@@ -143,6 +143,36 @@ mod tests {
         }
 
         match memsnap.exec_sql("SELECT SUM(size) FROM allocations ORDER BY size LIMIT 4") {
+            Ok(out) => println!("{}", out),
+            Err(e) => eprintln!("SQL error: {}", e),
+        }
+
+        match memsnap.exec_sql("SELECT SUM(aaa) FROM allocations ORDER BY size LIMIT 4") {
+            Ok(out) => println!("{}", out),
+            Err(e) => eprintln!("SQL error: {}", e),
+        }
+    }
+
+    #[test]
+    fn test_big() {
+        // These paths should point to your actual JSON files
+        // For demonstration, you'd create dummy files named allocations.json and elements.json
+        // in a 'snapshots' directory relative to where you run the executable.
+        let alloc_path = "../snapshots/large/transformer_allocations.json";
+        let elements_path = "../snapshots/large/transformer_elements.json";
+
+        // start timer
+
+        let mut memsnap = MemSnap::from_paths(alloc_path, elements_path).unwrap();
+
+        memsnap.build_sqlite().unwrap();
+
+        match memsnap.exec_sql("SELECT idx, size FROM allocations ORDER BY size DESC LIMIT 10") {
+            Ok(out) => println!("{}", out),
+            Err(e) => eprintln!("SQL error: {}", e),
+        }
+
+        match memsnap.exec_sql("SELECT SUM(size) FROM allocations ORDER BY size LIMIT 120") {
             Ok(out) => println!("{}", out),
             Err(e) => eprintln!("SQL error: {}", e),
         }

@@ -2,11 +2,12 @@ import json
 import os
 import pickle
 import sys
+from tqdm import tqdm
 
 from icecream import ic
 
 
-def process_alloc_data(device_trace, plot_segments=False, max_entries=15000):
+def process_alloc_data(device_trace, plot_segments=False):
     elements = []
     initially_allocated = []
     actions = []
@@ -16,6 +17,7 @@ def process_alloc_data(device_trace, plot_segments=False, max_entries=15000):
     alloc_actions = {"alloc", "segment_alloc"} if not plot_segments else {"segment_alloc"}
     free_actions = {"free", "free_completed"} if not plot_segments else {"segment_free", "segment_free"}
 
+    print("Processing events")
     for idx, event in enumerate(device_trace):
         if event["action"] in alloc_actions:
             elements.append(event)
@@ -49,7 +51,6 @@ def process_alloc_data(device_trace, plot_segments=False, max_entries=15000):
         "size": [],
         "color": 0,
     }
-    summarized_elems = set()
 
     def advance(n):
         nonlocal timestep
@@ -61,43 +62,28 @@ def process_alloc_data(device_trace, plot_segments=False, max_entries=15000):
             max_at_time.append(total_mem + total_summarized_mem)
 
     # 处理初始分配
-    for elem in reversed(initially_allocated):
-        if elem < max_entries:
-            # 添加到可视分配
-            element = elements[elem]
-            current.append(elem)
-            color = elem
-            data_entry = {
-                "elem": elem,
-                "timesteps": [timestep],
-                "offsets": [total_mem],
-                "size": element["size"],
-                "color": color,
-            }
-            current_data.append(data_entry)
-            data.append(data_entry)
-            total_mem += element["size"]
-        else:
-            # 添加到汇总内存
-            summarized_elems.add(elem)
-            total_summarized_mem += elements[elem]["size"]
+    print("Processing initial allocations")
+    for elem in tqdm(reversed(initially_allocated)):
+        # 添加到可视分配
+        element = elements[elem]
+        current.append(elem)
+        color = elem
+        data_entry = {
+            "elem": elem,
+            "timesteps": [timestep],
+            "offsets": [total_mem],
+            "size": element["size"],
+            "color": color,
+        }
+        current_data.append(data_entry)
+        data.append(data_entry)
+        total_mem += element["size"]
 
     # 处理动作序列
-    for elem in actions:
+    print("Processing actions")
+    for elem in tqdm(actions):
         element = elements[elem]
         size = element["size"]
-
-        if elem >= max_entries:
-            # 处理汇总内存
-            if elem in summarized_elems:
-                advance(1)
-                total_summarized_mem -= size
-                summarized_elems.discard(elem)
-            else:
-                total_summarized_mem += size
-                summarized_elems.add(elem)
-                advance(1)
-            continue
 
         # 查找当前分配
         try:
@@ -140,7 +126,7 @@ def process_alloc_data(device_trace, plot_segments=False, max_entries=15000):
         max_size = max(max_size, total_mem + total_summarized_mem)
 
     # 收尾处理
-    for entry in current_data:
+    for entry in tqdm(current_data):
         entry["timesteps"].append(timestep)
         entry["offsets"].append(entry["offsets"][-1])
 

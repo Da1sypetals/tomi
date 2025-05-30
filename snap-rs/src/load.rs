@@ -6,31 +6,33 @@ use std::fs;
 pub fn load_allocations(
     alloc_path: &str,
     elements_path: &str,
-) -> Result<Vec<Allocation>, Box<dyn Error>> {
+) -> Result<Vec<Allocation>, anyhow::Error> {
     // Read and parse allocations.json
     let alloc_content = fs::read_to_string(alloc_path)
-        .map_err(|e| format!("Failed to read allocations file '{}': {}", alloc_path, e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to read allocations file '{}': {}", alloc_path, e))?;
     let raw_allocs: Vec<RawAllocationData> = serde_json::from_str(&alloc_content).map_err(|e| {
-        format!(
+        anyhow::anyhow!(
             "Failed to parse allocations JSON from '{}': {}",
-            alloc_path, e
+            alloc_path,
+            e
         )
     })?;
 
     // Read and parse elements.json
     let elements_content = fs::read_to_string(elements_path)
-        .map_err(|e| format!("Failed to read elements file '{}': {}", elements_path, e))?;
+        .map_err(|e| anyhow::anyhow!("Failed to read elements file '{}': {}", elements_path, e))?;
     // elements.json is a list, where each item has a "frames" key.
     let elements_data: Vec<ElementData> = serde_json::from_str(&elements_content).map_err(|e| {
-        format!(
+        anyhow::anyhow!(
             "Failed to parse elements JSON from '{}': {}",
-            elements_path, e
+            elements_path,
+            e
         )
     })?;
 
     // Check if the number of allocations matches the number of element data (callstacks)
     if raw_allocs.len() != elements_data.len() {
-        return Err(format!(
+        return Err(anyhow::anyhow!(
             "Mismatch in the number of entries: {} allocations vs {} elements",
             raw_allocs.len(),
             elements_data.len()

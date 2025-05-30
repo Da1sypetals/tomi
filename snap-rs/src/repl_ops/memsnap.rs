@@ -1,6 +1,7 @@
+use log::{info, trace};
 use rusqlite::Connection;
 
-use crate::allocation::Allocation;
+use crate::{allocation::Allocation, load::load_allocations};
 use std::collections::BTreeMap;
 
 pub type AllocationIndex = usize;
@@ -22,6 +23,7 @@ pub struct MemSnap {
 
 impl MemSnap {
     pub fn new(allocations: Vec<Allocation>) -> Self {
+        info!("Sorting timestamps...");
         let mut timestamps: Vec<u32> = Vec::new();
 
         for alloc in &allocations {
@@ -41,5 +43,16 @@ impl MemSnap {
             peak_sorted_sizes: None,
             database: None,
         }
+    }
+
+    pub fn from_paths(alloc_path: &str, elements_path: &str) -> Result<Self, anyhow::Error> {
+        pretty_env_logger::formatted_timed_builder()
+            .filter_level(log::LevelFilter::Trace)
+            .init();
+
+        info!("Loading allocations...");
+        let allocations = load_allocations(alloc_path, elements_path)?;
+
+        Ok(Self::new(allocations))
     }
 }
