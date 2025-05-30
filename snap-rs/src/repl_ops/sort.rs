@@ -54,6 +54,14 @@ impl MemSnap {
             Ok(i) => i,
             Err(i) => i,
         };
+        if nearest_timestamp_index >= self.timestamps.len() {
+            return Err(anyhow::anyhow!(
+                "Timestamp {} is out of bounds: expected [0, {}), got {}",
+                timestamp,
+                self.timestamps.len(),
+                nearest_timestamp_index
+            ));
+        }
         let nearest_timestamp = self.timestamps[nearest_timestamp_index];
 
         match self.timestamp_sorted_sizes.get(&nearest_timestamp) {

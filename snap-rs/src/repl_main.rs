@@ -81,17 +81,22 @@ fn main() -> anyhow::Result<()> {
         match readline {
             Ok(line) => {
                 let cmd = line.trim().to_string();
+
                 rl.add_history_entry(cmd.as_str())?;
 
                 let output = snap.exec(cmd);
 
                 match output {
-                    snap_rs::repl::ExecResult::Success(out) => println!("{}", out),
-                    snap_rs::repl::ExecResult::Error(err) => eprintln!("Error: {}", err),
-                    snap_rs::repl::ExecResult::Quit => {
-                        println!("Bye!");
-                        break;
-                    }
+                    Ok(out) => println!("{}", out),
+                    Err(e) => match e.to_string().as_str() {
+                        "!quit" => {
+                            println!("Bye!");
+                            break;
+                        }
+                        err => {
+                            eprintln!("Error: {}", err);
+                        }
+                    },
                 }
             }
             Err(ReadlineError::Interrupted) => {

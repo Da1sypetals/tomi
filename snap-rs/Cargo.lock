@@ -1287,6 +1287,7 @@ dependencies = [
  "rustyline",
  "serde",
  "serde_json",
+ "thiserror",
  "zip",
 ]
 

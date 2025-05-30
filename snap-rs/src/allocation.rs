@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use std::fmt::{Display, Formatter, Result};
 
+use crate::utils::format_bytes;
+
 // Corresponds to the Python Frame dataclass
 #[derive(Deserialize, Debug)]
 pub struct Frame {
@@ -30,8 +32,8 @@ pub struct Allocation {
 impl Display for Allocation {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         writeln!(f, "Allocation Details:")?;
-        writeln!(f, "├── Size: {} bytes", self.size)?;
-        writeln!(f, "├── Peak Memory: {} bytes", self.peak_mem)?;
+        writeln!(f, "├── Size: {}", format_bytes(self.size))?;
+        writeln!(f, "├── Peak Memory: {}", format_bytes(self.peak_mem))?;
         writeln!(f, "├── Peak Timestamps: {:?}", self.peak_timestamps)?;
         writeln!(
             f,
