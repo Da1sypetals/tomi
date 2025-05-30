@@ -2,30 +2,120 @@ use crate::allocation::{Allocation, ElementData, RawAllocationData};
 use serde::Deserialize;
 use std::error::Error;
 use std::fs;
+use std::fs::File;
+use std::io::{self, Read};
+use std::path::Path;
+use zip::ZipArchive;
 
-pub fn load_allocations(
-    alloc_path: &str,
-    elements_path: &str,
-) -> Result<Vec<Allocation>, anyhow::Error> {
+#[derive(Debug)]
+pub enum SnapType {
+    Json {
+        allocations_path: String,
+        elements_path: String,
+    },
+    Zip {
+        path: String,
+    },
+}
+
+#[derive(Debug)]
+pub struct RawSnap {
+    pub(crate) dumptype: SnapType,
+    pub(crate) allocations: String,
+    pub(crate) elements: String,
+}
+
+/// Unzips "allocations.json" and "elements.json" from a zip file into memory.
+///
+/// ## Arguments
+/// * `zip_file_path` - The path to the zip file.
+///
+/// ## Returns
+/// A `Result` containing a tuple of `(Option<String>, Option<String>)` where the first
+/// `String` is the content of "allocations.json" and the second is the content of
+/// "elements.json", or an `io::Error` if an error occurs.
+pub fn read_snap_from_zip(zip_file_path: &str) -> anyhow::Result<RawSnap> {
+    let mut allocations: Option<String> = None;
+    let mut elements: Option<String> = None;
+
+    // Open the zip file
+    let file = File::open(zip_file_path)?;
+
+    // Create a ZipArchive from the file
+    let mut archive = ZipArchive::new(file)?;
+
+    // Iterate over each file in the zip archive
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i)?;
+
+        let outpath = match file.enclosed_name() {
+            Some(path) => path.to_owned(),
+            None => continue, // Skip if no valid name
+        };
+
+        if outpath.extension().and_then(|s| s.to_str()) == Some("json") {
+            let filename = outpath.file_name().and_then(|s| s.to_str()).unwrap_or("");
+
+            if filename.contains("allocations") {
+                let mut content = String::new();
+                file.read_to_string(&mut content)?;
+                allocations = Some(content);
+            } else if filename.contains("elements") {
+                let mut content = String::new();
+                file.read_to_string(&mut content)?;
+                elements = Some(content);
+            }
+        }
+    }
+
+    match (allocations, elements) {
+        (None, None) => Err(anyhow::anyhow!("allocations and elements not found!")),
+        (None, Some(_)) => Err(anyhow::anyhow!("allocations not found!")),
+        (Some(_), None) => Err(anyhow::anyhow!("elements not found!")),
+        (Some(allocs), Some(elems)) => Ok(RawSnap {
+            dumptype: SnapType::Zip {
+                path: zip_file_path.to_string(),
+            },
+            allocations: allocs,
+            elements: elems,
+        }),
+    }
+}
+
+pub fn read_snap_from_jsons(alloc_path: &str, elements_path: &str) -> anyhow::Result<RawSnap> {
     // Read and parse allocations.json
     let alloc_content = fs::read_to_string(alloc_path)
         .map_err(|e| anyhow::anyhow!("Failed to read allocations file '{}': {}", alloc_path, e))?;
-    let raw_allocs: Vec<RawAllocationData> = serde_json::from_str(&alloc_content).map_err(|e| {
-        anyhow::anyhow!(
-            "Failed to parse allocations JSON from '{}': {}",
-            alloc_path,
-            e
-        )
-    })?;
 
     // Read and parse elements.json
     let elements_content = fs::read_to_string(elements_path)
         .map_err(|e| anyhow::anyhow!("Failed to read elements file '{}': {}", elements_path, e))?;
+
+    Ok(RawSnap {
+        dumptype: SnapType::Json {
+            allocations_path: alloc_path.to_string(),
+            elements_path: elements_path.to_string(),
+        },
+        allocations: alloc_content,
+        elements: elements_content,
+    })
+}
+
+pub fn load_allocations(rawsnap: RawSnap) -> Result<Vec<Allocation>, anyhow::Error> {
+    let raw_allocs: Vec<RawAllocationData> =
+        serde_json::from_str(&rawsnap.allocations).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to parse allocations JSON from '{:?}': {}",
+                rawsnap.dumptype,
+                e
+            )
+        })?;
+
     // elements.json is a list, where each item has a "frames" key.
-    let elements_data: Vec<ElementData> = serde_json::from_str(&elements_content).map_err(|e| {
+    let elements_data: Vec<ElementData> = serde_json::from_str(&rawsnap.elements).map_err(|e| {
         anyhow::anyhow!(
-            "Failed to parse elements JSON from '{}': {}",
-            elements_path,
+            "Failed to parse elements JSON from '{:?}': {}",
+            rawsnap.dumptype,
             e
         )
     })?;
@@ -77,17 +167,16 @@ pub fn load_allocations(
 
 #[cfg(test)]
 mod tests {
-    use super::load_allocations;
+    use crate::repl_ops::memsnap::MemSnap;
+
+    use super::{load_allocations, read_snap_from_jsons, read_snap_from_zip};
 
     #[test]
     fn test_basic() {
-        // These paths should point to your actual JSON files
-        // For demonstration, you'd create dummy files named allocations.json and elements.json
-        // in a 'snapshots' directory relative to where you run the executable.
         let alloc_path = "../snapshots/allocations.json";
         let elements_path = "../snapshots/elements.json";
 
-        match load_allocations(alloc_path, elements_path) {
+        match load_allocations(read_snap_from_jsons(alloc_path, elements_path).unwrap()) {
             Ok(allocations) => {
                 if allocations.is_empty() {
                     println!("No allocations were loaded.");
@@ -99,6 +188,20 @@ mod tests {
                     }
                     // println!("{:#?}", allocations);
                 }
+            }
+            Err(e) => {
+                eprintln!("Error loading allocations: {}", e);
+            }
+        }
+    }
+
+    #[test]
+    fn test_loadzip() {
+        let zip_path = "../snapshots/large/transformer.zip";
+
+        match MemSnap::from_zip(zip_path) {
+            Ok(snap) => {
+                dbg!(snap.allocations.len());
             }
             Err(e) => {
                 eprintln!("Error loading allocations: {}", e);

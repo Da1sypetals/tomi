@@ -39,7 +39,11 @@ impl MemSnap {
 
 #[cfg(test)]
 mod tests {
-    use crate::{repl_ops::memsnap::MemSnap, load::load_allocations, utils::format_bytes};
+    use crate::{
+        load::{load_allocations, read_snap_from_jsons},
+        repl_ops::memsnap::MemSnap,
+        utils::format_bytes,
+    };
 
     #[test]
     fn test_peak() {
@@ -49,7 +53,8 @@ mod tests {
         let alloc_path = "../snapshots/allocations.json";
         let elements_path = "../snapshots/elements.json";
 
-        let allocations = load_allocations(alloc_path, elements_path).unwrap();
+        let allocations =
+            load_allocations(read_snap_from_jsons(alloc_path, elements_path).unwrap()).unwrap();
 
         let mut memsnap = MemSnap::new(allocations);
 

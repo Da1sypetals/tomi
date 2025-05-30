@@ -1,24 +1,11 @@
-use snap_rs::load::load_allocations;
+use snap_rs::repl_ops::memsnap::MemSnap;
 
 fn main() {
-    let alloc_path = "../snapshots/allocations.json";
-    let elements_path = "../snapshots/elements.json";
+    let zip_path = "../snapshots/large/transformer.zip";
 
-    match load_allocations(alloc_path, elements_path) {
-        Ok(allocations) => {
-            if allocations.is_empty() {
-                println!("No allocations were loaded.");
-            } else {
-                println!("Successfully loaded {} allocations:", allocations.len());
-
-                let alloc = &allocations[3];
-
-                dbg!(&alloc.timesteps);
-                dbg!(&alloc.offsets);
-                dbg!(&alloc.size);
-                dbg!(&alloc.callstack[13]);
-                // println!("{:#?}", allocations);
-            }
+    match MemSnap::from_zip(zip_path) {
+        Ok(snap) => {
+            dbg!(snap.allocations.len());
         }
         Err(e) => {
             eprintln!("Error loading allocations: {}", e);

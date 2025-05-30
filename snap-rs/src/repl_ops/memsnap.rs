@@ -1,7 +1,10 @@
 use log::{info, trace};
 use rusqlite::Connection;
 
-use crate::{allocation::Allocation, load::load_allocations};
+use crate::{
+    allocation::Allocation,
+    load::{RawSnap, SnapType, load_allocations, read_snap_from_jsons, read_snap_from_zip},
+};
 use std::collections::BTreeMap;
 
 pub type AllocationIndex = usize;
@@ -45,14 +48,26 @@ impl MemSnap {
         }
     }
 
-    pub fn from_paths(alloc_path: &str, elements_path: &str) -> Result<Self, anyhow::Error> {
+    pub fn from_zip(zip_path: &str) -> anyhow::Result<Self> {
         pretty_env_logger::formatted_timed_builder()
             .filter_level(log::LevelFilter::Trace)
             .init();
 
         info!("Loading allocations...");
-        let allocations = load_allocations(alloc_path, elements_path)?;
+        let rawsnap = read_snap_from_zip(zip_path)?;
+        let allocations = load_allocations(rawsnap)?;
 
+        Ok(Self::new(allocations))
+    }
+
+    pub fn from_jsons(alloc_path: &str, elements_path: &str) -> anyhow::Result<Self> {
+        pretty_env_logger::formatted_timed_builder()
+            .filter_level(log::LevelFilter::Trace)
+            .init();
+
+        info!("Loading allocations...");
+        let rawsnap = read_snap_from_jsons(alloc_path, elements_path)?;
+        let allocations = load_allocations(rawsnap)?;
         Ok(Self::new(allocations))
     }
 }

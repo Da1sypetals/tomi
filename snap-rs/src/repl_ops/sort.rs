@@ -1,6 +1,7 @@
 use super::memsnap::MemSnap;
 
 impl MemSnap {
+    /// Return indices to the allocations
     pub fn global_topk(&mut self, k: usize) -> Result<Vec<usize>, anyhow::Error> {
         if k >= self.allocations.len() {
             return Err(anyhow::anyhow!(format!(
@@ -34,6 +35,7 @@ impl MemSnap {
         }
     }
 
+    /// Return indices to the allocations
     pub fn timestamp_topk(
         &mut self,
         timestamp: u32,
@@ -90,7 +92,11 @@ impl MemSnap {
 
 #[cfg(test)]
 mod tests {
-    use crate::{repl_ops::memsnap::MemSnap, load::load_allocations, utils::format_bytes};
+    use crate::{
+        load::{load_allocations, read_snap_from_jsons},
+        repl_ops::memsnap::MemSnap,
+        utils::format_bytes,
+    };
 
     #[test]
     fn test_global() {
@@ -100,7 +106,8 @@ mod tests {
         let alloc_path = "../snapshots/allocations.json";
         let elements_path = "../snapshots/elements.json";
 
-        let allocations = load_allocations(alloc_path, elements_path).unwrap();
+        let allocations =
+            load_allocations(read_snap_from_jsons(alloc_path, elements_path).unwrap()).unwrap();
 
         let mut memsnap = MemSnap::new(allocations);
 
@@ -124,7 +131,8 @@ mod tests {
         let alloc_path = "../snapshots/allocations.json";
         let elements_path = "../snapshots/elements.json";
 
-        let allocations = load_allocations(alloc_path, elements_path).unwrap();
+        let allocations =
+            load_allocations(read_snap_from_jsons(alloc_path, elements_path).unwrap()).unwrap();
 
         let mut memsnap = MemSnap::new(allocations);
 

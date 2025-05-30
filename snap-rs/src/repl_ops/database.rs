@@ -121,7 +121,11 @@ impl MemSnap {
 
 #[cfg(test)]
 mod tests {
-    use crate::{load::load_allocations, repl_ops::memsnap::MemSnap, utils::format_bytes};
+    use crate::{
+        load::{load_allocations, read_snap_from_jsons},
+        repl_ops::memsnap::MemSnap,
+        utils::format_bytes,
+    };
 
     #[test]
     fn test_peak() {
@@ -131,7 +135,8 @@ mod tests {
         let alloc_path = "../snapshots/allocations.json";
         let elements_path = "../snapshots/elements.json";
 
-        let allocations = load_allocations(alloc_path, elements_path).unwrap();
+        let allocations =
+            load_allocations(read_snap_from_jsons(alloc_path, elements_path).unwrap()).unwrap();
 
         let mut memsnap = MemSnap::new(allocations);
 
@@ -163,7 +168,7 @@ mod tests {
 
         // start timer
 
-        let mut memsnap = MemSnap::from_paths(alloc_path, elements_path).unwrap();
+        let mut memsnap = MemSnap::from_jsons(alloc_path, elements_path).unwrap();
 
         memsnap.build_sqlite().unwrap();
 
@@ -172,12 +177,26 @@ mod tests {
             Err(e) => eprintln!("SQL error: {}", e),
         }
 
-        match memsnap.exec_sql("SELECT SUM(size) FROM allocations ORDER BY size LIMIT 120") {
+        match memsnap.exec_sql(
+            "SELECT idx AS num_rows
+FROM allocations
+ORDER BY size DESC
+LIMIT 120;",
+        ) {
             Ok(out) => println!("{}", out),
             Err(e) => eprintln!("SQL error: {}", e),
         }
 
         match memsnap.exec_sql("SELECT SUM(aaa) FROM allocations ORDER BY size LIMIT 4") {
+            Ok(out) => println!("{}", out),
+            Err(e) => eprintln!("SQL error: {}", e),
+        }
+
+        match memsnap.exec_sql(
+            "SELECT SUM(size) AS total_size, COUNT(*) AS num_rows
+FROM allocations
+WHERE callstack LIKE '%torch%';",
+        ) {
             Ok(out) => println!("{}", out),
             Err(e) => eprintln!("SQL error: {}", e),
         }
