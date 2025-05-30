@@ -190,11 +190,13 @@ def cli():
     allocations = allocations_over_time[:-1]
 
     # allocations_over_time: save to json
+    print("Saving allocations_over_time to json")
     allocations_path = os.path.join(output_dir, "allocations.json")
     with open(allocations_path, "w") as f:
         f.write(json.dumps(allocations))
 
     # elements: save to json
+    print("Saving elements to json")
     elements_path = os.path.join(output_dir, "elements.json")
     with open(elements_path, "w") as f:
         f.write(json.dumps(elements))
@@ -202,6 +204,7 @@ def cli():
     import zipfile
 
     if args.zip:
+        print("Saving as zip")
         zip_path = os.path.join(output_dir, "snap.zip")
         with zipfile.ZipFile(zip_path, "w") as f:
             f.write(allocations_path)
