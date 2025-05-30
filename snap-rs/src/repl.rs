@@ -16,6 +16,7 @@ impl MemSnap {
     /// Input: trimmed command
     /// Return the output string
     pub fn exec(&mut self, cmd: String) -> ExecResult {
+        // TODO: refact or
         if cmd.starts_with("sql ") {
             let sql_command = &cmd[3..];
             match self.exec_sql(&sql_command) {
