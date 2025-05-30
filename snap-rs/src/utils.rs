@@ -5,7 +5,7 @@ pub fn format_bytes(bytes: u64) -> String {
 
     for unit in UNITS {
         if num.abs() < 1024.0 {
-            return format!("{:.1}{}B", num, unit);
+            return format!("{:.1} {}B", num, unit);
         }
         num /= 1024.0;
     }

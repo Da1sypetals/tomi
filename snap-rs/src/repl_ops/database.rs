@@ -103,12 +103,12 @@ impl MemSnap {
                     Ok(row_values)
                 })?;
 
-                println!("\n===== SQL Query Results =====");
+                output_string.push_str("\n===== SQL Query Results =====\n");
                 for (idx, row_result) in rows_iter.enumerate() {
                     let row_values = row_result?;
-                    println!("\n===== Row {} =====", idx);
+                    output_string.push_str(&format!("\n===== Row {} =====\n", idx));
                     for (col_name, row_value) in column_names.iter().zip(row_values) {
-                        println!("column [{}] : {}", col_name, row_value);
+                        output_string.push_str(&format!("column [{}] : {}\n", col_name, row_value));
                     }
                 }
 

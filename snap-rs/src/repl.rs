@@ -1,4 +1,4 @@
-use crate::repl_ops::memsnap::MemSnap;
+use crate::{repl_ops::memsnap::MemSnap, utils::format_bytes};
 
 pub enum ExecResult {
     Success(String),
@@ -26,6 +26,12 @@ impl MemSnap {
             match self.build_sqlite() {
                 Ok(_) => "Build Sqlite OK".to_string().into(),
                 Err(e) => ExecResult::Error(format!("Building Sqlite error: {}", e)),
+            }
+        } else if cmd.starts_with("byte ") {
+            let byte_str = cmd[5..].trim(); // Get string after "byte " and trim whitespace
+            match byte_str.parse::<u64>() {
+                Ok(bytes) => format_bytes(bytes).into(),
+                Err(e) => ExecResult::Error(format!("Invalid byte value (expected uint64): {}", e)),
             }
         } else if cmd == "q" || cmd == "quit" {
             ExecResult::Quit
