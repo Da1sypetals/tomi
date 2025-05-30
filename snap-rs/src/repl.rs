@@ -268,13 +268,16 @@ impl MemSnap {
                 }
                 Ok(
                     r#"Available commands:
-  help                    - Display this help message.
-  i | inspect <index>     - Inspect an allocation at the specified index.
-  sql <query>             - Execute an SQL query against the loaded data (require build sql database first).
-  sqlbuild                - Build the in-memory sqlite database from current data.
-  byte <value>            - Format a byte value (e.g., '1024' -> '1.0 KiB').
-  timeline <path>         - Plot a timeline graph and save it to the specified path.
-  q | quit                - Exit the application."#
+  help                              - Display this help message.
+  i | inspect <index>               - Inspect an allocation at the specified index.
+  top <k> [verbose] [@timestamp]    - Print the top k allocations (sorted descending by size).
+                                        If timestamp is specified, print the top k allocations at the specified timestamp.
+  peak <k> [verbose]                - Print the peak allocations (sorted descending by size).
+  sql <query>                       - Execute an SQL query against the loaded data (require build sql database first).
+  sqlbuild                          - Build the in-memory sqlite database from current data.
+  byte <value>                      - Format a byte value (e.g., '1024' -> '1.0 KiB').
+  timeline <path>                   - Plot a timeline graph and save it to the specified path.
+  q | quit                          - Exit the application."#
                         .to_string(),
                 )
             }
