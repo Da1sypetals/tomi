@@ -9,8 +9,8 @@ pub struct AllocationDbRow {
     pub size: u64,
     pub callstack: String,
     pub peak_mem: u64,
-    pub start_timestamp: u32,
-    pub end_timestamp: u32,
+    pub start_timestamp: u64,
+    pub end_timestamp: u64,
 }
 
 pub fn format_callstack(frames: &[Frame]) -> String {

@@ -39,7 +39,7 @@ impl MemSnap {
     /// Return indices to the allocations
     pub fn timestamp_topk(
         &mut self,
-        timestamp: u32,
+        timestamp: u64,
         k: usize,
     ) -> Result<Vec<usize>, anyhow::Error> {
         if k >= self.allocations.len() {

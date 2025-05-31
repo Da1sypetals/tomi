@@ -15,13 +15,13 @@ pub type AllocationIndex = usize;
 pub struct MemSnap {
     pub allocations: Vec<Allocation>,
 
-    pub timestamps: Vec<u32>, // all timestamps that something happens, sorted ascending
+    pub timestamps: Vec<u64>, // all timestamps that something happens, sorted ascending
 
     pub timeline: Option<Timeline>,
 
     pub global_sorted_sizes: Option<Vec<AllocationIndex>>, // indices, sorted descending
 
-    pub timestamp_sorted_sizes: BTreeMap<u32, Vec<AllocationIndex>>, // timestamp -> indices, sorted descending
+    pub timestamp_sorted_sizes: BTreeMap<u64, Vec<AllocationIndex>>, // timestamp -> indices, sorted descending
 
     pub peak_sorted_sizes: Option<Vec<AllocationIndex>>,
 
@@ -31,7 +31,7 @@ pub struct MemSnap {
 impl MemSnap {
     pub fn new(allocations: Vec<Allocation>) -> Self {
         info!("Sorting timestamps...");
-        let mut timestamps: Vec<u32> = Vec::new();
+        let mut timestamps: Vec<u64> = Vec::new();
 
         for alloc in &allocations {
             timestamps.extend(alloc.timesteps.iter());

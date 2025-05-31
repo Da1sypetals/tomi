@@ -8,8 +8,8 @@ use plotters::{
 use std::collections::BTreeMap;
 
 pub struct Timeline {
-    pub timeline: Vec<(u32, u64)>,
-    pub max_time: u32,
+    pub timeline: Vec<(u64, u64)>,
+    pub max_time: u64,
     pub max_alloc: u64,
 }
 

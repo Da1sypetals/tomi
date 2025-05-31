@@ -1,7 +1,6 @@
+use crate::utils::format_bytes;
 use serde::Deserialize;
 use std::fmt::{Display, Formatter, Result};
-
-use crate::utils::format_bytes;
 
 // Corresponds to the Python Frame dataclass
 #[derive(Deserialize, Debug)]
@@ -21,12 +20,12 @@ impl Display for Frame {
 // Corresponds to the Python Allocation dataclass
 #[derive(Deserialize, Debug)]
 pub struct Allocation {
-    pub timesteps: Vec<u32>, // x coords, sorted
+    pub timesteps: Vec<u64>, // x coords, sorted
     pub offsets: Vec<u64>,   // y coords, length same as `timesteps`
     pub size: u64,           // height (sweep distance)
     pub callstack: Vec<Frame>,
     pub peak_mem: u64,
-    pub peak_timestamps: Vec<u32>, // reaches its peak at these timestamps
+    pub peak_timestamps: Vec<u64>, // reaches its peak at these timestamps
 }
 
 impl Display for Allocation {
@@ -64,15 +63,15 @@ impl Display for Allocation {
 }
 
 impl Allocation {
-    pub fn is_alive_in_interval(&self, start: u32, stop: u32) -> bool {
+    pub fn is_alive_in_interval(&self, start: u64, stop: u64) -> bool {
         self.is_alive_at(start) && self.is_alive_at(stop)
     }
 
-    pub fn is_alive_at(&self, timestamp: u32) -> bool {
+    pub fn is_alive_at(&self, timestamp: u64) -> bool {
         self.timesteps[0] <= timestamp && timestamp <= *self.timesteps.last().unwrap()
     }
 
-    pub fn start_end_time(&self) -> (u32, u32) {
+    pub fn start_end_time(&self) -> (u64, u64) {
         (self.timesteps[0], *self.timesteps.last().unwrap())
     }
 }
@@ -80,7 +79,7 @@ impl Allocation {
 // Intermediate struct to help parse the structure of allocations.json
 #[derive(Deserialize)]
 pub struct RawAllocationData {
-    pub timesteps: Vec<u32>,
+    pub timesteps: Vec<u64>,
     pub offsets: Vec<u64>,
     pub size: u64,
 }

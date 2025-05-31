@@ -16,9 +16,9 @@ impl std::fmt::Display for Quit {
 #[derive(Debug, PartialEq)]
 pub enum TopkOption {
     Global,
-    Timestamp(u32),
+    Timestamp(u64),
     GlobalVerbose,
-    TimestampVerbose(u32),
+    TimestampVerbose(u64),
 }
 
 pub fn parse_topk_option(options: &[&str]) -> anyhow::Result<TopkOption> {
@@ -29,7 +29,7 @@ pub fn parse_topk_option(options: &[&str]) -> anyhow::Result<TopkOption> {
             if s == "v" || s == "verbose" {
                 Ok(TopkOption::GlobalVerbose)
             } else if s.starts_with('@') {
-                if let Ok(ts) = s[1..].parse::<u32>() {
+                if let Ok(ts) = s[1..].parse::<u64>() {
                     Ok(TopkOption::Timestamp(ts))
                 } else {
                     Err(anyhow::anyhow!("Invalid timestamp format: {}", s))
@@ -47,7 +47,7 @@ pub fn parse_topk_option(options: &[&str]) -> anyhow::Result<TopkOption> {
 
             // Case: one verbose, one timestamp
             if s1_is_verbose && s2_is_timestamp {
-                if let Ok(ts) = s2[1..].parse::<u32>() {
+                if let Ok(ts) = s2[1..].parse::<u64>() {
                     Ok(TopkOption::TimestampVerbose(ts))
                 } else {
                     Err(anyhow::anyhow!("Invalid timestamp format: {}", s2))
