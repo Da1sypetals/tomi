@@ -9,6 +9,8 @@ pub struct AllocationDbRow {
     pub size: u64,
     pub callstack: String,
     pub peak_mem: u64,
+    pub start_timestamp: u32,
+    pub end_timestamp: u32,
 }
 
 pub fn format_callstack(frames: &[Frame]) -> String {
@@ -34,6 +36,8 @@ impl MemSnap {
                 size: alloc.size,
                 callstack,
                 peak_mem: alloc.peak_mem,
+                start_timestamp: alloc.timesteps[0],
+                end_timestamp: *alloc.timesteps.last().unwrap(),
             }
         });
 
@@ -41,13 +45,30 @@ impl MemSnap {
 
         {
             log::info!("Creating allocations table");
-            database.execute("CREATE TABLE allocations (idx INTEGER PRIMARY KEY, size INTEGER, callstack TEXT, peak_mem INTEGER)", ())?;
+            database.execute(
+                "CREATE TABLE allocations (
+idx INTEGER PRIMARY KEY, 
+size INTEGER, 
+callstack TEXT, 
+peak_mem INTEGER,
+start_timestamp INTEGER,
+end_timestamp INTEGER
+)",
+                (),
+            )?;
 
             log::info!("Inserting rows into allocations table");
             for row in rows {
                 database.execute(
-                    "INSERT INTO allocations (idx, size, callstack, peak_mem) VALUES (?, ?, ?, ?)",
-                    (&row.index, &row.size, &row.callstack, &row.peak_mem),
+                    "INSERT INTO allocations (idx, size, callstack, peak_mem, start_timestamp, end_timestamp) VALUES (?, ?, ?, ?, ?, ?)",
+                    (
+                        &row.index,
+                        &row.size,
+                        &row.callstack,
+                        &row.peak_mem,
+                        &row.start_timestamp,
+                        &row.end_timestamp,
+                    ),
                 )?;
             }
         }
