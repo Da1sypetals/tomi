@@ -1,5 +1,3 @@
-use std::process::exit;
-
 use clap::{Arg, ArgAction, ArgGroup, Command};
 use rustyline::{DefaultEditor, error::ReadlineError};
 use snap_rs::repl_ops::memsnap::MemSnap;
@@ -52,7 +50,7 @@ fn cli() -> CliArg {
             "No valid arguments provided. Use --zip <PATH> or --json <ALLOC_PATH> <ELEM_PATH>."
         );
 
-        exit(1);
+        std::process::exit(1);
     }
 }
 
@@ -71,7 +69,7 @@ fn main() -> anyhow::Result<()> {
         Ok(snap) => snap,
         Err(err) => {
             eprintln!("Error loading snap: {}", err);
-            exit(1);
+            std::process::exit(1);
         }
     };
 
